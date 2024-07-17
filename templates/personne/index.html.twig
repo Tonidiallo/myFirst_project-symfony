@@ -7,21 +7,25 @@
     {% for personne in personnes %}
         <div class="card" style="width: 18rem;">
             <div class="card-body">
-                <h5 class="card-title">{{ personne.firtname }}</h5>
+                <h5 class="card-title">{{ personne.name }}</h5>
 
                 <h6 class="card-subtitle mb-2 text-muted">{{ personne.firtname }} {{ personne.name }}</h6>
 
                 <p class="card-text">Age : {{ personne.age }}.</p>
+                <p class="card-text">Id : {{ personne.id }}.</p>
 
-                 <a href="{{ path('app_personne_detail', {id: personne.id}) }}" class="card-link">
+                 <a href="{{ path('app_personne_detail', {id: personne.id})}}" class="card-link">
                      <i class="fas fa-info-circle"></i>
                 </a>
             
-                <a href="{{ path('app_personne_delete', {id: personne.id}) }}" class="card-link">
+                <a href="{{ path('app_personne_delete', {id: personne.id})}}" class="card-link">
                     <i class="fas fa-user-times"></i>
                 </a>
-                <a href="{{ path('app_personne_edit', {id: personne.id}) }}" class="card-link">
+                <a href="{{ path('app_personne_edit', {id: personne.id})}}" class="card-link">
                     <i class="fas fa-user-edit"></i>
+                </a>
+                <a href="{{ path('app_personne_pdf', {id: personne.id})}}" class="card-link">
+                    <i class="far fa-file-pdf"></i>
                 </a>
             </div>
         </div>

@@ -6,6 +6,7 @@ use App\Entity\Personne;
 use App\Form\PersonneType;
 use App\Service\Helpers;
 use App\Service\MailerService;
+use App\Service\PdfService;
 use App\Service\UploaderService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -68,7 +69,13 @@ use Psr\Log\LoggerInterface;
          ]);
      }
 
-     #[Route('/detail/{id}', name: 'app_personne_detail')]
+     #[Route('/pdf/{id}', name: 'app_personne_pdf')]
+    public function generatePdfPersonne(Personne $personne = null, PdfService $pdf) {
+        $html = $this->render('personne/detail.html.twig', ['personne' => $personne]);
+        $pdf->showPdfFile($html);
+    }
+
+     #[Route('/{id<\d+>}', name: 'app_personne_detail')]
      public function detail(Personne $personne = null) : Response{
 
          if(!$personne){
@@ -78,7 +85,7 @@ use Psr\Log\LoggerInterface;
          return  $this->render('personne/detail.html.twig',['personne'=>$personne] );
      }
  
-
+     
     #[Route('/edit/{id?0}', name: 'app_personne_edit')]
     public function addPersonne(Personne $personne=null, 
                                     ManagerRegistry $doctrine, 
