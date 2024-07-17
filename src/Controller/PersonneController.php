@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\Personne;
 use App\Form\PersonneType;
 use App\Service\Helpers;
-
+use App\Service\MailerService;
 use App\Service\UploaderService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -83,7 +83,8 @@ use Psr\Log\LoggerInterface;
     public function addPersonne(Personne $personne=null, 
                                     ManagerRegistry $doctrine, 
                                     Request $request,
-                                    UploaderService $uploaderService
+                                    UploaderService $uploaderService,
+                                    MailerService $mailer
                                 ): Response
     {
         $new = false;
@@ -91,7 +92,7 @@ use Psr\Log\LoggerInterface;
             $new = true;
            $personne = new Personne();
         } 
-        $form = $this->createForm(PersonneType::class,$personne);
+        $form = $this->createForm(PersonneType::class, $personne);
         $form->remove('createdAt');
         $form->remove('updateAt');
         $form->handleRequest($request);
@@ -106,16 +107,21 @@ use Psr\Log\LoggerInterface;
             
             }
 
-            if($new){
-                $message=" a été ajouté avec succès";
-            }else{
-                $message= " a été mis à jour avec succès";
-            }
             $manager = $doctrine->getManager();
             $manager->persist($personne);
             $manager->flush();
 
+            if($new){
+                $message=" a été ajouté avec succès";
+                
+            }else{
+                $message= " a été mis à jour avec succès";
+            }
+
+            $mailMessage = $personne->getFirtname().' '.$personne->getName().' '.$message;
             $this->addFlash('success',  $personne->getName().$message);
+            $mailer->sendEmail(content: $mailMessage);
+
             return $this->redirectToRoute("app_personne_alls");
 
         }else{
