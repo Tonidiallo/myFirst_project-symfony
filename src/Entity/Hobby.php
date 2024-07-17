@@ -4,10 +4,15 @@ namespace App\Entity;
 
 use App\Repository\HobbyRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Traits\TimeStampTrait;
+
+#[ORM\HasLifecycleCallbacks()]
 
 #[ORM\Entity(repositoryClass: HobbyRepository::class)]
 class Hobby
 {
+    use TimeStampTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

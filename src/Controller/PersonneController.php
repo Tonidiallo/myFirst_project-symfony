@@ -3,18 +3,27 @@
 namespace App\Controller;
 
 use App\Entity\Personne;
+use App\Form\PersonneType;
+use App\Service\Helpers;
 
+use App\Service\UploaderService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+use Psr\Log\LoggerInterface;
 
-#[Route("/personne")]
+
+#[Route('/personne')]
 
  class PersonneController extends AbstractController
 {
+    public function __construct(private LoggerInterface $logger, private Helpers $helper) {
+        
+    }
     #[Route('/', name: 'app_personne')]
     public function index(ManagerRegistry $doctrine) : Response{
         $repository = $doctrine->getRepository(Personne::class);
@@ -23,14 +32,25 @@ use Symfony\Component\Routing\Attribute\Route;
     }
 
      #[Route('/alls/age/{ageMin}/{ageMax}', name: 'app_personne_age')]
-     public function personneByAge(ManagerRegistry $doctrine, $ageMin, $ageMax) : Response{
+     public function personneByAge(ManagerRegistry $doctrine, 
+                                    $ageMin, 
+                                    $ageMax) : Response{
+
          $repository = $doctrine->getRepository(Personne::class);
-         $personnes = $repository->findPersonneByAgeInterval($ageMin,$ageMax);
+         $personnes = $repository->findPersonneByAgeInterval($ageMin, $ageMax);
          return  $this->render('personne/index.html.twig',['personnes'=>$personnes] );
-     }
+     
+        }
 
      #[Route('/alls/{page?1}/{nbre?12}', name: 'app_personne_alls')]
-     public function indexAlls(ManagerRegistry $doctrine, $page, $nbre) : Response{
+     public function indexAlls(ManagerRegistry $doctrine, 
+                                $page, 
+                                $nbre
+                              ) : Response{
+         
+        
+         echo $this->helper->sayCc();   
+
          $repository = $doctrine->getRepository(Personne::class);
 
          $nbPersonne = $repository->count([]);
@@ -48,7 +68,7 @@ use Symfony\Component\Routing\Attribute\Route;
          ]);
      }
 
-     #[Route('/{id}', name: 'app_personne_detail')]
+     #[Route('/detail/{id}', name: 'app_personne_detail')]
      public function detail(Personne $personne = null) : Response{
 
          if(!$personne){
@@ -57,25 +77,55 @@ use Symfony\Component\Routing\Attribute\Route;
          }
          return  $this->render('personne/detail.html.twig',['personne'=>$personne] );
      }
+ 
 
-    #[Route('/add', name: 'app_personne_add')]
-    public function addPersonne(ManagerRegistry $doctrine)
+    #[Route('/edit/{id?0}', name: 'app_personne_edit')]
+    public function addPersonne(Personne $personne=null, 
+                                    ManagerRegistry $doctrine, 
+                                    Request $request,
+                                    UploaderService $uploaderService
+                                ): Response
     {
-        $entityManager = $doctrine->getManager();
-        $personne = new Personne();
-        $personne->setFirtname('ROSINE');
-        $personne->setName('COLY');
-        $personne->setAge('48');
+        $new = false;
+        if(!$personne){
+            $new = true;
+           $personne = new Personne();
+        } 
+        $form = $this->createForm(PersonneType::class,$personne);
+        $form->remove('createdAt');
+        $form->remove('updateAt');
+        $form->handleRequest($request);
 
-        // Ajouter l'opération d'insert de la personne
-        $entityManager->persist($personne);
+        if($form->isSubmitted() && $form->isValid()){
 
-        // Exécute la transaction
-        $entityManager->flush();
+            $photo = $form->get('photo')->getData();
+            if ($photo) {
 
-        return $this->render('personne/detail.html.twig', [
-            'personne' => $personne ,
-        ]);
+                $directory = $this->getParameter('personne_directory');
+                $personne->setImage($uploaderService->uploadFile($photo, $directory));
+            
+            }
+
+            if($new){
+                $message=" a été ajouté avec succès";
+            }else{
+                $message= " a été mis à jour avec succès";
+            }
+            $manager = $doctrine->getManager();
+            $manager->persist($personne);
+            $manager->flush();
+
+            $this->addFlash('success',  $personne->getName().$message);
+            return $this->redirectToRoute("app_personne_alls");
+
+        }else{
+            return $this->render('personne/add-personne.html.twig', [
+                'form'=> $form->createView(),
+                'new' => $new,
+            ]);
+        }
+
+       
     }
 
      #[Route('/delete/{id}', name: 'app_personne_delete')]

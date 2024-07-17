@@ -1,20 +1,53 @@
-{% extends 'base.html.twig' %}
+{% extends 'template.html.twig' %}
 
-{% block title %}Hello PersonneController!{% endblock %}
+{% block title %}Liste des personnes{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<div class="row">
+    {% for personne in personnes %}
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">{{ personne.firtname }}</h5>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+                <h6 class="card-subtitle mb-2 text-muted">{{ personne.firtname }} {{ personne.name }}</h6>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/Applications/XAMPP/xamppfiles/htdocs/myFirst_project-symfony/src/Controller/PersonneController.php</code></li>
-        <li>Your template at <code>/Applications/XAMPP/xamppfiles/htdocs/myFirst_project-symfony/templates/personne/index.html.twig</code></li>
-    </ul>
+                <p class="card-text">Age : {{ personne.age }}.</p>
+
+                 <a href="{{ path('app_personne_detail', {id: personne.id}) }}" class="card-link">
+                     <i class="fas fa-info-circle"></i>
+                </a>
+            
+                <a href="{{ path('app_personne_delete', {id: personne.id}) }}" class="card-link">
+                    <i class="fas fa-user-times"></i>
+                </a>
+                <a href="{{ path('app_personne_edit', {id: personne.id}) }}" class="card-link">
+                    <i class="fas fa-user-edit"></i>
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% if isPagined is defined %}
+        <div class="row mt-2">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            {% if page!= 1 %}
+                <li class="page-item"><a class="page-link" href="{{ path('app_personne_alls',{page: page -1, nbre: nbre}) }}">Précédent</a></li>
+            {% endif %}
+            {% for i in range(1, nbrePage) %}
+                <li class="page-item"><a class="page-link" href="{{ path('app_personne_alls',{page:i, nbre: nbre}) }}">{{ i }}</a></li>
+            {% endfor %}
+            {% if page!= nbrePage %}
+                <li class="page-item"><a class="page-link" href="{{ path('app_personne_alls',{page: page +1, nbre: nbre}) }}">Suivant</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
+
+{% block PageTitle %}
+    Liste des personnes 
+{% endblock %}
+

@@ -19,17 +19,15 @@ class PersonneRepository extends ServiceEntityRepository
     //    /**
     //     * @return Personne[] Returns an array of Personne objects
     //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+        public function findPersonneByAgeInterval($ageMin, $ageMax)
+        {
+            return $this->createQueryBuilder('p')
+                ->andWhere('p.age >= :ageMin and p.age <= :ageMax')
+                ->setParameter('ageMin',$ageMin)
+                ->setParameter('ageMax',$ageMax)
+                ->getQuery()
+                ->getResult();
+        }
 
     //    public function findOneBySomeField($value): ?Personne
     //    {
